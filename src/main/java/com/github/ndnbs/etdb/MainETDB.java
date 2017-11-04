@@ -82,35 +82,19 @@ public class MainETDB {
          conn = DriverManager.getConnection(DB_URL,USER,PASS);  
          
          //STEP 3: Execute a query 
-         System.out.println("Creating [os] table in given database..."); 
+         System.out.println("Creating [expense] table in given database..."); 
          stmt = conn.createStatement(); 
          String sql =  
-            "CREATE TABLE os (" + 
+            "CREATE TABLE expense (" + 
             "id IDENTITY, " + 
-            "c_dt TIMESTAMP NOT NULL DEFAULT NOW(0), " +  
-            "d_dt TIMESTAMP NOT NULL DEFAULT NOW(0), " +  
-            "port INTEGER NOT NULL, " +  
-            "symb VARCHAR(255) NOT NULL, " +  
-            "exch VARCHAR(255) NOT NULL, " +  
-            "stat CHAR(1) NOT NULL DEFAULT 'H', " +  
-            "pvom DECIMAL(20,2) NOT NULL DEFAULT 0.00, " +  
-            "o_d DATE NOT NULL DEFAULT TODAY, " +  
-            "o_a DECIMAL(20,2) NOT NULL, " +  
-            "o_p DECIMAL(20,2) NOT NULL, " +  
-            "s_d DATE NOT NULL DEFAULT TODAY, " +  
-            "s_a DECIMAL(20,2) NOT NULL DEFAULT 0.00, " +  
-            "s_p DECIMAL(20,2) NOT NULL DEFAULT 0.00, " +  
-            "l_p DECIMAL(20,2) NOT NULL DEFAULT 0.00, " +  
-            "l_p_dt TIMESTAMP NOT NULL DEFAULT NOW(0), " +  
-            "l_p_mech CHAR(6) NOT NULL DEFAULT 'MANUAL', " +  
-            "r0001_v CHAR(1) NOT NULL DEFAULT 'N', " +  
-            "r0001_dt TIMESTAMP NOT NULL DEFAULT NOW(0), " +  
-            "r0002_v CHAR(1) NOT NULL DEFAULT 'N', " +  
-            "r0002_dt TIMESTAMP NOT NULL DEFAULT NOW(0)" +  
+            "date_incurred DATE NOT NULL DEFAULT TODAY, " +  
+            "amount DECIMAL(20,2) NOT NULL, " +  
+            "category_id INTEGER NOT NULL, " +  
+            "memo VARCHAR(40) NOT NULL DEFAULT 'N' " +  
             ")";  
 
          stmt.executeUpdate(sql);
-         System.out.println("Created [os] table in given database..."); 
+         System.out.println("Created [expense] table in given database..."); 
          
          // STEP 4: Clean-up environment 
          stmt.close(); 
@@ -157,35 +141,29 @@ public class MainETDB {
          System.out.println("Connected database successfully..."); 
          stmt = conn.createStatement(); 
 
-         String header = "ID  PORT  SYMB       EXCH       S    O_A      O_P   O_D        C_DT";
+         String header = "ID       CATEGORY    DATE        AMOUNT MEMO";
          System.out.println(header); 
 
          // Below, we are going to SELECT all fields even if we are not displaying 
          // them further down. We want to keep this SELECT complete and in synch
          // with the CREATION.
          sql  = "SELECT "; 
-         sql += "id, c_dt, port, symb, exch, stat, pvom, o_d, o_a, o_p, ";
-         sql += "s_d, s_a, s_p, l_p, l_p_dt, l_p_mech, r0001_v, r0001_dt, "; 
-         sql += "r0002_v, r0002_dt "; 
-         sql += "FROM os"; 
+         sql += "id, date_incurred, amount, category_id, memo ";
+         sql += "FROM expense"; 
 
          ResultSet rs = stmt.executeQuery(sql); 
          
          // STEP 4: Extract data from result set 
          while(rs.next()) { 
             // Retrieve by column name 
-            int id      = rs.getInt("id"); 
-            String c_dt = rs.getString("c_dt"); 
-            int port    = rs.getInt("port"); 
-            String symb = rs.getString("symb"); 
-            String exch = rs.getString("exch"); 
-            String stat = rs.getString("stat"); 
-            String o_d  = rs.getString("o_d"); 
-            String o_a  = rs.getString("o_a"); 
-            String o_p  = rs.getString("o_p"); 
+            int id               = rs.getInt("id"); 
+            String dt_incurred   = rs.getString("date_incurred"); 
+            String amount        = rs.getString("amount"); 
+            int category_id      = rs.getInt("category_id"); 
+            String memo          = rs.getString("memo"); 
 
-            String out_str = String.format("%03d %04d  %-10s %-10s %s %8s %8s %s %s", 
-                                           id, port, symb, exch, stat, o_a, o_p, o_d, c_dt); 
+            // %04d  %-10s %-10s %s %8s %8s %s %s", 
+            String out_str = String.format("%08d %08d %-10s %10s %s", id, category_id, dt_incurred, amount, memo);
             // Display values 
             System.out.println(out_str); 
          } 
@@ -234,24 +212,27 @@ public class MainETDB {
          // STEP 3: Execute a query 
          stmt = conn.createStatement();  
 
-         sql = "INSERT INTO os " + 
+         sql = "INSERT INTO expense " + 
                 "VALUES (" +
-                "default, default, default, 13, 'AMZN', 'NASDAQ', default, default, default, 10.00, 13.13, " +
-                "default, default, default, default, default, default, default, default, default, default" +
+                "default, default, 10.10, 10, default" +
                 ")"; 
          stmt.executeUpdate(sql); 
 
-         sql = "INSERT INTO os " + 
+         sql = "INSERT INTO expense " + 
                 "VALUES (" +
-                "default, default, default, 13, 'SPOK', 'NASDAQ', default, default, default, 8.00, 14.14, " +
-                "default, default, default, default, default, default, default, default, default, default" +
+                "default, default, 20.20, 20, default" +
                 ")"; 
          stmt.executeUpdate(sql); 
 
-         sql = "INSERT INTO os " + 
+         sql = "INSERT INTO expense " + 
                 "VALUES (" +
-                "default, default, default, 13, 'LMT', 'NYSE', default, default, default, 99.00, 15.15, " +
-                "default, default, default, default, default, default, default, default, default, default" +
+                "default, default, 30.30, 30, '0123456789012345678901234567890123456789'" +
+                ")"; 
+         stmt.executeUpdate(sql); 
+
+         sql = "INSERT INTO expense " + 
+                "VALUES (" +
+                "default, default, 9999999.99, 99, 'This is my memo for this expense'" +
                 ")"; 
          stmt.executeUpdate(sql); 
 

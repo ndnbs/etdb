@@ -1,0 +1,50 @@
+plugins {
+    id 'groovy'
+    id 'com.github.johnrengelman.shadow' version '2.0.1'
+}
+
+/*
+Can also use a repository like "mavenCentral()" or a repository
+on the local filesystem too.
+For more information, see: 
+https://docs.gradle.org/4.0.1/userguide/dependency_management.html#sec:repositories
+    jcenter()
+    mavenCentral()
+*/
+
+repositories {
+    jcenter()
+}
+
+/*
+While using the "files" directive, a missing file will not cause gradle
+to error right away according to:
+https://stackoverflow.com/questions/42527631/how-to-make-gradle-fail-the-build-if-a-file-dependency-is-not-found
+However, such a missing file would likely cause a downstream compilation error.
+Another good reference on this topic:
+https://medium.com/@petehouston/compile-local-jar-files-with-gradle-a078e5c7a520
+NOTE: The slf4j-nop was just added to eliminate SLF4J noise being emitted when jcabi-ssh was added.
+*/
+
+dependencies {
+    compile 'com.h2database:h2:1.4.196'
+}
+
+jar {
+  manifest {
+    attributes(
+      'Main-Class': 'com.github.ndnbs.etdb.MainETDB'
+    )
+  }
+}
+
+/*
+      'Main-Class': 'org.h2.tools.Server'
+      'Main-Class': 'com.github.ndnbs.etdb.MainETDB'
+*/
+
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '4.0'
+}
+
